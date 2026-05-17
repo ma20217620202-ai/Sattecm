@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>退休金缺口診斷｜你的錢真的夠嗎？</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+:root {
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --surface2: #1f1f1f;
+  --border: #2a2a2a;
+  --text: #e8e2d9;
+  --muted: #666;
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --red: #c0392b;
+  --green: #27ae60;
+  --blue: #2980b9;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans TC', sans-serif;
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--border);
+  z-index: 100;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+/* ── SCREENS ── */
+.screen {
+  display: none;
+  min-height: 100vh;
+  padding: 60px 24px 40px;
+  max-width: 600px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease;
+}
+.screen.active { display: flex; flex-direction: column; justify-content: center; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SCREEN 0: SHOCK ── */
+.shock-screen {
+  text-align: center;
+}
+.shock-badge {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  padding: 4px 14px;
+  margin-bottom: 32px;
+  text-transform: uppercase;
+}
+.shock-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 7vw, 52px);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 24px;
+}
+.shock-title .cross {
+  color: var(--red);
+  font-style: italic;
+}
+.shock-subtitle {
+  font-size: 16px;
+  color: #aaa;
+  max-width: 420px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+}
+.shock-fact {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  padding: 20px 24px;
+  text-align: left;
+  margin-bottom: 40px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #bbb;
+}
+.shock-fact strong { color: var(--gold); }
+
+/* ── BUTTONS ── */
+.btn-primary {
+  background: var(--gold);
+  color: #0d0d0d;
+  border: none;
+  padding: 16px 32px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  letter-spacing: 0.05em;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 12px 24px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 12px;
+  width: 100%;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--text); color: var(--text); }
+
+/* ── SECTION HEADER ── */
+.step-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.step-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 5vw, 32px);
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.step-desc {
+  color: #888;
+  font-size: 14px;
+  margin-bottom: 32px;
+  line-height: 1.7;
+}
+
+/* ── FORM FIELDS ── */
+.field { margin-bottom: 24px; }
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #aaa;
+  margin-bottom: 8px;
+  letter-spacing: 0.03em;
+}
+.field label span { color: var(--gold); margin-left: 4px; font-size: 12px; }
+
+input[type="number"] {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px 16px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+input[type="number"]:focus { border-color: var(--gold); }
+
+.input-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* ── TOGGLE OPTIONS ── */
+.toggle-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.toggle-opt {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: #aaa;
+  padding: 14px;
+  text-align: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggle-opt:hover { border-color: var(--gold); color: var(--text); }
+.toggle-opt.active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.1);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ── RANGE ── */
+.range-field { margin-bottom: 28px; }
+.range-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #aaa;
+  margin-bottom: 12px;
+}
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 2px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px;
+  background: var(--gold);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.range-display {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold);
+  min-width: 52px;
+  text-align: right;
+}
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── AWAKENING SCREEN ── */
+.labor-reveal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.labor-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.labor-row:last-child { border-bottom: none; padding-bottom: 0; }
+.labor-name { font-size: 14px; color: #aaa; }
+.labor-amount { font-size: 18px; font-weight: 700; color: var(--gold); }
+.labor-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.total-row {
+  background: rgba(201,168,76,0.08);
+  border: 1px solid var(--gold);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.total-label { font-size: 14px; color: var(--gold); }
+.total-amount { font-size: 24px; font-weight: 700; color: var(--gold-light); }
+
+.reveal-note {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 28px;
+  padding: 16px;
+  border-left: 2px solid var(--border);
+}
+.reveal-note strong { color: var(--red); }
+
+/* ── DIAGNOSIS RESULT ── */
+.gap-hero {
+  text-align: center;
+  padding: 40px 0;
+}
+.gap-label { font-size: 12px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+.gap-amount {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(48px, 12vw, 80px);
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.gap-amount.danger { color: var(--red); }
+.gap-amount.warn { color: var(--gold); }
+.gap-amount.safe { color: var(--green); }
+.gap-unit { font-size: 16px; color: var(--muted); margin-bottom: 32px; }
+
+.diag-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.diag-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+.diag-box-label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.diag-box-val { font-size: 18px; font-weight: 700; }
+.diag-box-val.red { color: var(--red); }
+.diag-box-val.green { color: var(--green); }
+.diag-box-val.gold { color: var(--gold); }
+
+.verdict-box {
+  background: var(--surface);
+  border-left: 3px solid var(--gold);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #bbb;
+}
+.verdict-box strong { color: var(--text); }
+
+/* ── ALLOCATION INTERACTIVE ── */
+.alloc-section { margin-bottom: 32px; }
+.alloc-title {
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.alloc-slider { margin-bottom: 20px; }
+.alloc-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.alloc-name { font-size: 14px; font-weight: 500; }
+.alloc-pct { font-size: 16px; font-weight: 700; }
+.pct-etf { color: var(--green); }
+.pct-lev { color: var(--gold); }
+.pct-bond { color: var(--blue); }
+.pct-cash { color: var(--muted); }
+
+input.alloc-range {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+input.alloc-range.etf { background: linear-gradient(90deg, var(--green) var(--val, 50%), var(--border) var(--val, 50%)); }
+input.alloc-range.lev { background: linear-gradient(90deg, var(--gold) var(--val, 15%), var(--border) var(--val, 15%)); }
+input.alloc-range.bond { background: linear-gradient(90deg, var(--blue) var(--val, 20%), var(--border) var(--val, 20%)); }
+input.alloc-range.cash { background: linear-gradient(90deg, var(--muted) var(--val, 15%), var(--border) var(--val, 15%)); }
+
+input.alloc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg);
+}
+input.alloc-range.etf::-webkit-slider-thumb { background: var(--green); }
+input.alloc-range.lev::-webkit-slider-thumb { background: var(--gold); }
+input.alloc-range.bond::-webkit-slider-thumb { background: var(--blue); }
+input.alloc-range.cash::-webkit-slider-thumb { background: #666; }
+
+.alloc-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.alloc-total-label { font-size: 13px; color: var(--muted); }
+.alloc-total-val { font-size: 18px; font-weight: 700; }
+.alloc-total-val.ok { color: var(--green); }
+.alloc-total-val.over { color: var(--red); }
+
+.live-result {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 20px 24px;
+  margin-top: 20px;
+}
+.live-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.live-row:last-child { border-bottom: none; }
+.live-row-label { color: #888; }
+.live-row-val { font-weight: 600; }
+
+.warning-msg {
+  background: rgba(192,57,43,0.1);
+  border: 1px solid var(--red);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #e88;
+  margin-top: 12px;
+  display: none;
+}
+
+/* ── FINAL ── */
+.final-screen { text-align: center; }
+.final-icon { font-size: 48px; margin-bottom: 24px; }
+.final-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(24px, 5vw, 36px);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.final-summary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  text-align: left;
+  margin: 28px 0;
+}
+.final-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.final-row:last-child { border-bottom: none; }
+.final-row-label { color: #888; }
+.final-row-val { font-weight: 600; }
+
+.disclaimer {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── NAV ── */
+.nav-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.nav-row .btn-primary { flex: 2; }
+.btn-back {
+  flex: 1;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 16px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-back:hover { border-color: var(--text); color: var(--text); }
+
+@media (max-width: 480px) {
+  .diag-grid { grid-template-columns: 1fr; }
+  .toggle-group { grid-template-columns: 1fr; }
+}
+
+/* ── INVESTMENT BREAKDOWN ── */
+.inv-category {
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  padding: 16px;
+  background: var(--surface);
+}
+.inv-cat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.inv-cat-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.inv-cat-name { font-size: 14px; font-weight: 600; }
+.inv-cat-eg { font-size: 12px; color: var(--muted); margin-left: auto; }
+.inv-category .field { margin-bottom: 0; }
+
+.inv-total-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 20px;
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+.inv-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.inv-total-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.inv-bar-row {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: var(--border);
+}
+.inv-bar-seg { height: 100%; transition: width 0.4s ease; }
+.inv-diag-msg {
+  font-size: 13px;
+  color: #aaa;
+  line-height: 1.7;
+  min-height: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- ══ SCREEN 0: SHOCK ══ -->
+<div class="screen active" id="s0">
+  <div class="shock-screen">
+    <div class="shock-badge">退休金缺口診斷 v2.0</div>
+    <h1 class="shock-title">
+      勞退<br>
+      <span class="cross">不是</span>領到死
+    </h1>
+    <p class="shock-subtitle">
+      大多數人以為勞退可以領到終身——<br>
+      但事實上，它只付到你的<strong style="color:var(--gold)">平均餘命</strong>為止。
+    </p>
+    <div class="shock-fact">
+      <strong>真相：</strong>以目前規定，60歲退休對應平均餘命約24年，也就是領到 <strong>84歲就停了</strong>。之後的日子，你靠什麼？<br><br>
+      而且這個數字<strong>每3年更新一次</strong>——你這一代退休時，可能更長，但沒人知道會是幾歲。
+    </div>
+    <button class="btn-primary" onclick="goTo(1)">→ 開始診斷我的退休缺口</button>
+    <p style="font-size:12px;color:var(--muted);margin-top:16px;">全程匿名・不需註冊・約3分鐘</p>
+  </div>
+</div>
+
+<!-- ══ SCREEN 1: BASIC INFO ══ -->
+<div class="screen" id="s1">
+  <div class="step-label">Step 1 / 5 ── 基本資料</div>
+  <h2 class="step-title">先告訴我你的狀況</h2>
+  <p class="step-desc">這些資料只在你的瀏覽器裡運算，不會傳到任何伺服器。</p>
+
+  <div class="field">
+    <label>目前年齡 <span>歲</span></label>
+    <input type="number" id="age" value="50" min="45" max="64">
+  </div>
+  <div class="field">
+    <label>預計退休年齡 <span>歲</span></label>
+    <input type="number" id="retireAge" value="60" min="50" max="70">
+  </div>
+  <div class="field">
+    <label>退休後每月生活費 <span>元</span></label>
+    <input type="number" id="expense" value="35000" min="10000">
+    <div class="input-hint">台灣平均退休族約需 3~4 萬元／月</div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-back" onclick="goTo(0)">← 返回</button>
+    <button class="btn-primary" onclick="goTo(2)">下一步 →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN 2: ASSETS ══ -->
+<div class="screen" id="s2">
+  <div class="step-label">Step 2 / 5 ── 勞保勞退 ＆ 風險</div>
+  <h2 class="step-title">政府幫你存的錢</h2>
+  <p class="step-desc">勞保和勞退是很多人忘記計算的退休收入來源，先填這裡。</p>
+
+  <div class="field">
+    <label>每月可繼續投入金額 <span>元</span></label>
+    <input type="number" id="monthly" value="10000" min="0" max="200000">
+    <div class="input-hint">單位是「元」，例如每月存1萬請填 10000（上限 200,000）</div>
+  </div>
+
+  <div class="step-label" style="margin-top:8px;">你有參加勞保和勞退嗎？</div>
+  <div class="toggle-group" id="laborToggle">
+    <div class="toggle-opt active" onclick="selectLabor(this,'yes')">有，我是受薪勞工</div>
+    <div class="toggle-opt" onclick="selectLabor(this,'no')">沒有／不確定</div>
+  </div>
+
+  <div id="laborFields">
+    <div class="field">
+      <label>勞退專戶目前累積金額 <span>萬元（不確定填0）</span></label>
+      <input type="number" id="laborFund" value="0" min="0">
+      <div class="input-hint">可至勞保局e化服務系統查詢</div>
+    </div>
+    <div class="field">
+      <label>預估每月勞保年金 <span>元（不確定填0）</span></label>
+      <input type="number" id="laborInsurance" value="0" min="0">
+      <div class="input-hint">可至勞保局官網試算，平均約 1.5～2 萬元</div>
+    </div>
+  </div>
+
+  <div class="range-field">
+    <label>可接受的最大虧損幅度</label>
+    <div class="range-row">
+      <input type="range" id="tolerance" min="5" max="40" value="20" step="5"
+        oninput="document.getElementById('tolDisplay').textContent=this.value+'%'">
+      <div class="range-display" id="tolDisplay">20%</div>
+    </div>
+    <div class="range-labels"><span>保守 5%</span><span>積極 40%</span></div>
+  </div>
+
+  <div class="range-field">
+    <label>預估通膨率 <small style="color:var(--muted);font-weight:400">（影響退休後生活費實質需求）</small></label>
+    <div class="range-row">
+      <input type="range" id="inflation" min="2" max="4" value="2" step="0.5"
+        oninput="document.getElementById('inflDisplay').textContent=this.value+'%'">
+      <div class="range-display" id="inflDisplay">2%</div>
+    </div>
+    <div class="range-labels"><span>溫和 2%</span><span>偏高 4%</span></div>
+    <div class="input-hint" style="margin-top:6px;">台灣近年平均通膨約 2～3%，保守規劃建議設 3% 以上</div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-back" onclick="goTo(1)">← 返回</button>
+    <button class="btn-primary" onclick="goTo(25)">下一步 →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN 2.5: INVESTMENT BREAKDOWN ══ -->
+<div class="screen" id="s25">
+  <div class="step-label">Step 3 / 5 ── 現有投資盤點</div>
+  <h2 class="step-title">你現在投資了什麼？</h2>
+  <p class="step-desc">填入各類投資的<strong style="color:var(--gold)">目前市值</strong>，不確定的填 0。工具會自動幫你診斷現有配置。</p>
+
+  <!-- 核心 ETF -->
+  <div class="inv-category">
+    <div class="inv-cat-header">
+      <span class="inv-cat-dot" style="background:var(--green)"></span>
+      <span class="inv-cat-name">📈 核心 ETF</span>
+      <span class="inv-cat-eg">VT・0050・006208 等</span>
+    </div>
+    <div class="field">
+      <label>目前市值 <span>萬元</span></label>
+      <input type="number" id="inv_core" value="0" min="0" max="99999" oninput="updateInvTotal()">
+    </div>
+  </div>
+
+  <!-- 衛星 ETF -->
+  <div class="inv-category">
+    <div class="inv-cat-header">
+      <span class="inv-cat-dot" style="background:#e67e22"></span>
+      <span class="inv-cat-name">🛰️ 衛星 ETF</span>
+      <span class="inv-cat-eg">QQQ・00662・0056 等</span>
+    </div>
+    <div class="field">
+      <label>目前市值 <span>萬元</span></label>
+      <input type="number" id="inv_satellite" value="0" min="0" max="99999" oninput="updateInvTotal()">
+    </div>
+  </div>
+
+  <!-- 槓桿 ETF -->
+  <div class="inv-category">
+    <div class="inv-cat-header">
+      <span class="inv-cat-dot" style="background:var(--gold)"></span>
+      <span class="inv-cat-name">⚡ 槓桿 ETF</span>
+      <span class="inv-cat-eg">QLD・00670L・00631L 等</span>
+    </div>
+    <div class="field">
+      <label>目前市值 <span>萬元</span></label>
+      <input type="number" id="inv_leverage" value="0" min="0" max="99999" oninput="updateInvTotal()">
+    </div>
+  </div>
+
+  <!-- 債券 / REIT -->
+  <div class="inv-category">
+    <div class="inv-cat-header">
+      <span class="inv-cat-dot" style="background:var(--blue)"></span>
+      <span class="inv-cat-name">🛡️ 債券 / REIT</span>
+      <span class="inv-cat-eg">BND・00865B・REITs 等</span>
+    </div>
+    <div class="field">
+      <label>目前市值 <span>萬元</span></label>
+      <input type="number" id="inv_bond" value="0" min="0" max="99999" oninput="updateInvTotal()">
+    </div>
+  </div>
+
+  <!-- 現金 -->
+  <div class="inv-category">
+    <div class="inv-cat-header">
+      <span class="inv-cat-dot" style="background:var(--muted)"></span>
+      <span class="inv-cat-name">💵 現金 / 定存</span>
+      <span class="inv-cat-eg">活存・定存・貨幣帳戶 等</span>
+    </div>
+    <div class="field">
+      <label>目前金額 <span>萬元</span></label>
+      <input type="number" id="inv_cash" value="0" min="0" max="99999" oninput="updateInvTotal()">
+    </div>
+  </div>
+
+  <!-- 即時合計 -->
+  <div class="inv-total-box" id="invTotalBox">
+    <div class="inv-total-row">
+      <span style="color:var(--muted);font-size:13px;">投資總市值合計</span>
+      <span class="inv-total-val" id="invTotalVal">0 萬</span>
+    </div>
+    <div class="inv-bar-row" id="invBarRow"></div>
+    <div class="inv-diag-msg" id="invDiagMsg"></div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-back" onclick="goTo(2)">← 返回</button>
+    <button class="btn-primary" onclick="runDiagnosis()">診斷我的缺口 →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN 3: AWAKENING + DIAGNOSIS ══ -->
+<div class="screen" id="s3">
+  <div class="step-label">Step 4 / 5 ── 診斷結果</div>
+  <h2 class="step-title">你可能忘記了這些錢</h2>
+  <p class="step-desc">很多人在規劃退休時，完全忘記把政府的退休金算進去。</p>
+
+  <div class="labor-reveal" id="laborReveal"></div>
+  <div class="total-row" id="laborTotal"></div>
+  <div class="reveal-note" id="laborNote"></div>
+
+  <!-- Gap -->
+  <div class="gap-hero">
+    <div class="gap-label">你的退休金缺口</div>
+    <div class="gap-amount" id="gapAmount">—</div>
+    <div class="gap-unit" id="gapUnit"></div>
+  </div>
+
+  <div class="diag-grid" id="diagGrid"></div>
+  <div class="verdict-box" id="verdictBox"></div>
+
+  <div class="nav-row">
+    <button class="btn-back" onclick="goTo(25)">← 返回</button>
+    <button class="btn-primary" onclick="goTo(4)">調整我的配置 →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN 4: INTERACTIVE ALLOCATION ══ -->
+<div class="screen" id="s4">
+  <div class="step-label">Step 5 / 5 ── 配置模擬</div>
+  <h2 class="step-title">自己調整，看看結果</h2>
+  <p class="step-desc">拖動滑桿，即時看到不同配置對退休資產的影響。總比例需等於100%。</p>
+
+  <div class="alloc-section">
+    <div class="alloc-title">資產配置比例</div>
+
+    <div class="alloc-slider">
+      <div class="alloc-slider-header">
+        <span class="alloc-name">📈 核心 ETF <small style="color:var(--muted)">VT・0050</small></span>
+        <span class="alloc-pct pct-etf" id="dispEtf">40%</span>
+      </div>
+      <input type="range" class="alloc-range etf" id="rEtf" min="0" max="100" value="40" step="5" oninput="updateAlloc()">
+    </div>
+
+    <div class="alloc-slider">
+      <div class="alloc-slider-header">
+        <span class="alloc-name">🛰️ 衛星 ETF <small style="color:var(--muted)">QQQ・00662</small></span>
+        <span class="alloc-pct" style="color:#e67e22" id="dispSat">20%</span>
+      </div>
+      <input type="range" class="alloc-range" style="background:linear-gradient(90deg,#e67e22 20%,var(--border) 20%)" id="rSat" min="0" max="60" value="20" step="5" oninput="updateAlloc()">
+    </div>
+
+    <div class="alloc-slider">
+      <div class="alloc-slider-header">
+        <span class="alloc-name">⚡ 槓桿 ETF <small style="color:var(--muted)">QLD・00670L</small></span>
+        <span class="alloc-pct pct-lev" id="dispLev">15%</span>
+      </div>
+      <input type="range" class="alloc-range lev" id="rLev" min="0" max="50" value="15" step="5" oninput="updateAlloc()">
+    </div>
+
+    <div class="alloc-slider">
+      <div class="alloc-slider-header">
+        <span class="alloc-name">🛡️ 債券／REIT <small style="color:var(--muted)">BND・00865B</small></span>
+        <span class="alloc-pct pct-bond" id="dispBond">15%</span>
+      </div>
+      <input type="range" class="alloc-range bond" id="rBond" min="0" max="60" value="15" step="5" oninput="updateAlloc()">
+    </div>
+
+    <div class="alloc-slider">
+      <div class="alloc-slider-header">
+        <span class="alloc-name">💵 現金備用</span>
+        <span class="alloc-pct pct-cash" id="dispCash">10%</span>
+      </div>
+      <input type="range" class="alloc-range cash" id="rCash" min="0" max="40" value="10" step="5" oninput="updateAlloc()">
+    </div>
+
+    <div class="alloc-total-row">
+      <span class="alloc-total-label">目前總計</span>
+      <span class="alloc-total-val" id="allocTotal">100%</span>
+    </div>
+
+    <div class="warning-msg" id="allocWarning">⚠️ 總比例超過或不足100%，請調整</div>
+  </div>
+
+  <div class="live-result" id="liveResult"></div>
+
+  <div class="nav-row" style="margin-top:24px;">
+    <button class="btn-back" onclick="goTo(3)">← 返回</button>
+    <button class="btn-primary" onclick="goTo(5)">查看完整報告 →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN 5: FINAL REPORT ══ -->
+<div class="screen" id="s5">
+  <div class="final-screen">
+    <div class="final-icon" id="finalIcon">📊</div>
+    <h2 class="final-title" id="finalTitle">你的退休金診斷報告</h2>
+    <p style="color:#888;font-size:14px;margin-bottom:24px;" id="finalSubtitle"></p>
+
+    <div class="final-summary" id="finalSummary"></div>
+
+    <div style="display:flex;gap:10px;margin-top:20px;margin-bottom:12px;">
+      <button class="btn-primary" style="flex:1" onclick="printReport()">🖨️ 列印報告</button>
+      <button class="btn-primary" style="flex:1;background:var(--green)" onclick="downloadReport()">⬇️ 下載 PDF</button>
+    </div>
+    <button class="btn-secondary" onclick="goTo(0)">← 重新診斷</button>
+
+    <div class="disclaimer">
+      本工具僅供參考，非投資建議。計算結果基於假設報酬率，實際結果可能不同。<br>
+      勞退平均餘命依勞動部公告為準，每3年更新，本工具採保守估算。<br>
+      投資涉及風險，請自行判斷與承擔。
+    </div>
+  </div>
+</div>
+
+<!-- 列印專用隱藏層 -->
+<div id="printArea" style="display:none"></div>
+
+<style>
+@media print {
+  body * { visibility: hidden; }
+  #printArea, #printArea * { visibility: visible; }
+  #printArea {
+    display: block !important;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    font-family: 'Noto Sans TC', sans-serif;
+    color: #111;
+    background: white;
+    padding: 40px;
+  }
+}
+</style>
+
+<script>
+// ── STATE ──
+let state = {
+  age: 50, retireAge: 60, expense: 35000,
+  assets: 200, monthly: 10000,
+  hasLabor: true, laborFund: 0, laborInsurance: 0,
+  tolerance: 20,
+  // computed
+  yearsLeft: 10, projectedOwn: 0, laborMonthly: 0,
+  totalMonthly: 0, neededAssets: 0, gap: 0,
+  annualReturn: 0.06
+};
+
+const PROGRESS_MAP = {0:0, 1:15, 2:30, 25:50, 3:65, 4:82, 5:100};
+
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('s'+n);
+  if (target) {
+    target.classList.add('active');
+    document.getElementById('progressFill').style.width = (PROGRESS_MAP[n] || 0) + '%';
+    window.scrollTo(0, 0);
+  }
+}
+
+function updateInvTotal() {
+  const core     = +document.getElementById('inv_core').value || 0;
+  const sat      = +document.getElementById('inv_satellite').value || 0;
+  const lev      = +document.getElementById('inv_leverage').value || 0;
+  const bond     = +document.getElementById('inv_bond').value || 0;
+  const cash     = +document.getElementById('inv_cash').value || 0;
+  const total    = core + sat + lev + bond + cash;
+
+  document.getElementById('invTotalVal').textContent = fmtWan(total);
+
+  // colour bar
+  const barRow = document.getElementById('invBarRow');
+  if (total === 0) { barRow.innerHTML = ''; document.getElementById('invDiagMsg').textContent = '請填入各類投資金額'; return; }
+
+  const segs = [
+    { val: core, color: 'var(--green)' },
+    { val: sat,  color: '#e67e22' },
+    { val: lev,  color: 'var(--gold)' },
+    { val: bond, color: 'var(--blue)' },
+    { val: cash, color: 'var(--muted)' },
+  ];
+  barRow.innerHTML = segs.map(s =>
+    `<div class="inv-bar-seg" style="width:${(s.val/total*100).toFixed(1)}%;background:${s.color}"></div>`
+  ).join('');
+
+  // diagnosis message
+  const leveragePct = total > 0 ? lev / total * 100 : 0;
+  const corePct     = total > 0 ? (core + sat) / total * 100 : 0;
+  const cashPct     = total > 0 ? cash / total * 100 : 0;
+  let msg = '';
+  if (leveragePct > 30) msg = '⚠️ 槓桿比例偏高（>' + Math.round(leveragePct) + '%），波動較大，需確認自己能承受回撤。';
+  else if (cashPct > 40) msg = '💡 現金比例偏高（>' + Math.round(cashPct) + '%），長期可能跑輸通膨，建議逐步配置到資產。';
+  else if (corePct < 30 && total > 0) msg = '💡 核心 ETF 比例偏低，建議提高穩健資產作為壓艙石。';
+  else if (total > 0) msg = '✓ 配置結構尚合理，繼續往下看你的退休缺口。';
+  document.getElementById('invDiagMsg').textContent = msg;
+}
+
+function selectLabor(el, val) {
+  document.querySelectorAll('#laborToggle .toggle-opt').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  state.hasLabor = val === 'yes';
+  document.getElementById('laborFields').style.display = val === 'yes' ? 'block' : 'none';
+}
+
+function getReturn(tol) {
+  if (tol <= 10) return 0.04;
+  if (tol <= 20) return 0.06;
+  if (tol <= 30) return 0.08;
+  return 0.10;
+}
+
+function fmt(n) { return Math.round(n).toLocaleString(); }
+function fmtWan(n) {
+  const v = Math.round(n);
+  if (v >= 10000) return (v/10000).toFixed(1) + ' 億';
+  return v + ' 萬';
+}
+
+// 安全的複利計算，防止溢出
+function safeCompound(principal, annualRate, years) {
+  if (years <= 0 || annualRate <= 0) return principal;
+  const result = principal * Math.pow(1 + annualRate, years);
+  return isFinite(result) ? result : principal * (1 + annualRate * years);
+}
+
+function safeAnnuity(monthlyAmt, annualRate, years) {
+  if (years <= 0) return 0;
+  if (annualRate <= 0) return monthlyAmt * 12 * years;
+  const result = (monthlyAmt * 12) * ((Math.pow(1 + annualRate, years) - 1) / annualRate);
+  return isFinite(result) ? result : monthlyAmt * 12 * years;
+}
+
+function validateInputs() {
+  const age = +document.getElementById('age').value || 50;
+  const retireAge = +document.getElementById('retireAge').value || 60;
+  const expense = +document.getElementById('expense').value || 35000;
+  const monthly = +document.getElementById('monthly').value || 0;
+
+  const core = +document.getElementById('inv_core').value || 0;
+  const sat  = +document.getElementById('inv_satellite').value || 0;
+  const lev  = +document.getElementById('inv_leverage').value || 0;
+  const bond = +document.getElementById('inv_bond').value || 0;
+  const cash = +document.getElementById('inv_cash').value || 0;
+  const totalAssets = core + sat + lev + bond + cash;
+
+  if (retireAge <= age) { alert('退休年齡必須大於目前年齡！'); return false; }
+  if (retireAge - age > 30) { alert('距退休年數最多設定30年'); return false; }
+  if (expense < 10000) { alert('每月生活費至少填入 10,000 元'); return false; }
+  if (monthly > 200000) { alert('每月投入金額單位是「元」，上限20萬元，請確認是否填入過大的數字'); return false; }
+  if (totalAssets > 99999) { alert('各類投資金額單位是「萬元」，請確認數字是否正確'); return false; }
+  return true;
+}
+
+function runDiagnosis() {
+  if (!validateInputs()) return;
+
+  // read inputs
+  state.age = +document.getElementById('age').value || 50;
+  state.retireAge = +document.getElementById('retireAge').value || 60;
+  state.expense = +document.getElementById('expense').value || 35000;
+
+  // 從投資明細加總取得總資產
+  const core     = +document.getElementById('inv_core').value || 0;
+  const sat      = +document.getElementById('inv_satellite').value || 0;
+  const lev      = +document.getElementById('inv_leverage').value || 0;
+  const bond     = +document.getElementById('inv_bond').value || 0;
+  const cash     = +document.getElementById('inv_cash').value || 0;
+  state.assets   = core + sat + lev + bond + cash; // 萬元
+
+  state.monthly = +document.getElementById('monthly').value || 0;
+  state.laborFund = state.hasLabor ? (+document.getElementById('laborFund').value || 0) : 0;
+  state.laborInsurance = state.hasLabor ? (+document.getElementById('laborInsurance').value || 0) : 0;
+  state.tolerance = +document.getElementById('tolerance').value || 20;
+  state.inflation = +document.getElementById('inflation').value || 2;
+
+  // 儲存投資明細供後續顯示
+  state.invDetail = { core, sat, lev, bond, cash };
+
+  const yrs = Math.min(Math.max(state.retireAge - state.age, 1), 30);
+  state.yearsLeft = yrs;
+  state.annualReturn = getReturn(state.tolerance);
+
+  // 通膨調整後的退休生活費（今天的錢，退休時需要更多）
+  const inflRate = state.inflation / 100;
+  state.expenseReal = Math.round(state.expense * Math.pow(1 + inflRate, yrs));
+  state.inflAdjLabel = `（通膨 ${state.inflation}% 調整後：$${state.expenseReal.toLocaleString()}/月）`;
+
+  // Project own assets at retirement (compound) — 萬元單位
+  const r = state.annualReturn;
+  const assetGrowth = safeCompound(state.assets, r, yrs);
+  const monthlyContrib = safeAnnuity(state.monthly / 10000, r, yrs); // monthly元→萬
+  state.projectedOwn = assetGrowth + monthlyContrib;
+
+  // Labor retirement: laborFund grows too (conservative 2%)
+  const laborProjected = safeCompound(state.laborFund, 0.02, yrs);
+  // Monthly from labor fund: divide by 24 years (平均餘命)
+  const laborFundMonthly = laborProjected * 10000 / (24 * 12);
+  state.laborMonthly = laborFundMonthly + state.laborInsurance;
+
+  // Total monthly at retirement
+  // Own assets: 3.5% safe withdrawal
+  const ownMonthly = (state.projectedOwn * 10000 * 0.035) / 12;
+  state.totalMonthly = ownMonthly + state.laborMonthly;
+
+  // Needed assets (3.5% rule，使用通膨調整後生活費)
+  const monthlyFromOwn = Math.max(state.expenseReal - state.laborMonthly, 0);
+  state.neededAssets = (monthlyFromOwn * 12) / 0.035 / 10000; // in 萬
+  state.gap = state.neededAssets - state.projectedOwn;
+
+  buildAwakeningScreen();
+  buildDiagnosisScreen();
+  goTo(3);
+  updateAlloc();
+}
+
+function buildAwakeningScreen() {
+  const laborProjected = state.laborFund * Math.pow(1.02, state.yearsLeft);
+  const fundMonthly = laborProjected * 10000 / (24 * 12);
+
+  if (!state.hasLabor) {
+    document.getElementById('laborReveal').innerHTML = `
+      <div style="color:var(--muted);font-size:14px;text-align:center;padding:12px 0;">
+        你未參加勞保勞退，退休金需完全靠自己準備。
+      </div>`;
+    document.getElementById('laborTotal').innerHTML = `
+      <span class="total-label">政府退休金月領</span>
+      <span class="total-amount">$0</span>`;
+    document.getElementById('laborNote').innerHTML = `沒有勞保勞退保障，退休規劃壓力較大，建議積極自行累積資產。`;
+    return;
+  }
+
+  document.getElementById('laborReveal').innerHTML = `
+    <div class="labor-row">
+      <div>
+        <div class="labor-name">勞退新制月領（估）</div>
+        <div class="labor-note">退休時領到平均餘命止（目前約84歲）</div>
+      </div>
+      <div style="text-align:right">
+        <div class="labor-amount">$${fmt(fundMonthly)}</div>
+        <div class="labor-note">每月</div>
+      </div>
+    </div>
+    <div class="labor-row">
+      <div>
+        <div class="labor-name">勞保老年年金（估）</div>
+        <div class="labor-note">活到老領到老，無年齡上限</div>
+      </div>
+      <div style="text-align:right">
+        <div class="labor-amount">$${fmt(state.laborInsurance)}</div>
+        <div class="labor-note">每月</div>
+      </div>
+    </div>`;
+
+  document.getElementById('laborTotal').innerHTML = `
+    <span class="total-label">政府退休金合計（月）</span>
+    <span class="total-amount">$${fmt(state.laborMonthly)}</span>`;
+
+  const pct = state.laborMonthly > 0
+    ? Math.round(state.laborMonthly / state.expense * 100) : 0;
+
+  document.getElementById('laborNote').innerHTML = `
+    政府退休金約可覆蓋你每月生活費的 <strong style="color:var(--gold)">${pct}%</strong>。
+    ${pct >= 60 ? '壓力不算太大，但仍需自行補足缺口。' : pct >= 30 ? '還有一段缺口需要靠自己的投資補上。' : '缺口較大，<strong style="color:var(--red)">自行準備的部分非常重要。</strong>'}
+    <br><br>⚠️ 注意：勞退金領完即止，不會再繼續發放。勞保年金才是真正領到終身。`;
+}
+
+function buildDiagnosisScreen() {
+  const gap = state.gap;
+  const gapEl = document.getElementById('gapAmount');
+  const gapUnit = document.getElementById('gapUnit');
+
+  if (gap <= 0) {
+    gapEl.textContent = '無缺口';
+    gapEl.className = 'gap-amount safe';
+    gapUnit.textContent = '你的退休準備已足夠 ✓';
+  } else if (gap < 200) {
+    gapEl.textContent = fmtWan(gap);
+    gapEl.className = 'gap-amount warn';
+    gapUnit.textContent = '退休金仍有缺口，需要補強';
+  } else {
+    gapEl.textContent = fmtWan(gap);
+    gapEl.className = 'gap-amount danger';
+    gapUnit.textContent = '缺口較大，建議盡快調整計畫';
+  }
+
+  const ownMonthly = (state.projectedOwn * 10000 * 0.035) / 12;
+  const rawSustain = (state.projectedOwn * 10000) / (state.expense * 12);
+  const sustainYrs = Math.min(rawSustain, 99); // cap at 99 years
+  const sustainLabel = rawSustain > 99 ? '99年以上' : Math.round(sustainYrs) + ' 年';
+
+  document.getElementById('diagGrid').innerHTML = `
+    <div class="diag-box">
+      <div class="diag-box-label">退休時自有資產</div>
+      <div class="diag-box-val gold">${fmtWan(state.projectedOwn)}</div>
+    </div>
+    <div class="diag-box">
+      <div class="diag-box-label">退休後月收入（合計）</div>
+      <div class="diag-box-val ${state.totalMonthly >= state.expense ? 'green' : 'red'}">$${fmt(state.totalMonthly)}</div>
+    </div>
+    <div class="diag-box">
+      <div class="diag-box-label">退休後月生活費需求</div>
+      <div class="diag-box-val">$${fmt(state.expenseReal)}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">含通膨 ${state.inflation}%・今日幣值 $${fmt(state.expense)}</div>
+    </div>
+    <div class="diag-box">
+      <div class="diag-box-label">自有資產可撐幾年</div>
+      <div class="diag-box-val ${sustainYrs >= 25 ? 'green' : sustainYrs >= 15 ? 'gold' : 'red'}">${sustainLabel}</div>
+    </div>`;
+
+  let verdict = '';
+  if (gap <= 0) {
+    verdict = `<strong>恭喜！</strong>依目前軌跡，你的退休金來源已足夠支付生活費。重點是維持紀律，不要因市場波動而中斷計畫。`;
+  } else if (gap < 100) {
+    verdict = `缺口不算大，<strong>每月多存一點或稍微延後退休</strong>，就可以補上。建議下一步調整你的資產配置，讓複利發揮更大效果。`;
+  } else if (gap < 300) {
+    verdict = `有一定缺口。建議從兩個方向同時著手：<strong>提高每月投入金額</strong>，同時<strong>優化資產配置</strong>，讓有限的錢發揮更高的報酬率。`;
+  } else {
+    verdict = `缺口較大，需要認真面對。<strong>三條路可以走：</strong>一、大幅提高月投入；二、降低退休後生活費標準；三、延後退休年齡。三者組合使用效果最好。`;
+  }
+  document.getElementById('verdictBox').innerHTML = verdict;
+}
+
+function updateAlloc() {
+  const etf  = +document.getElementById('rEtf').value;
+  const sat  = +document.getElementById('rSat').value;
+  const lev  = +document.getElementById('rLev').value;
+  const bond = +document.getElementById('rBond').value;
+  const cash = +document.getElementById('rCash').value;
+  const total = etf + sat + lev + bond + cash;
+
+  document.getElementById('dispEtf').textContent  = etf  + '%';
+  document.getElementById('dispSat').textContent  = sat  + '%';
+  document.getElementById('dispLev').textContent  = lev  + '%';
+  document.getElementById('dispBond').textContent = bond + '%';
+  document.getElementById('dispCash').textContent = cash + '%';
+
+  // update slider gradients
+  const sliderMap = {
+    rEtf:  { color: 'var(--green)',  val: etf },
+    rSat:  { color: '#e67e22',       val: sat },
+    rLev:  { color: 'var(--gold)',   val: lev },
+    rBond: { color: 'var(--blue)',   val: bond },
+    rCash: { color: 'var(--muted)', val: cash },
+  };
+  Object.entries(sliderMap).forEach(([id, {color, val}]) => {
+    const el = document.getElementById(id);
+    const max = +el.max;
+    const pct = (val / max * 100).toFixed(1) + '%';
+    el.style.background = `linear-gradient(90deg, ${color} ${pct}, var(--border) ${pct})`;
+  });
+
+  const totalEl = document.getElementById('allocTotal');
+  totalEl.textContent = total + '%';
+  const isOk = total === 100;
+  totalEl.className = 'alloc-total-val ' + (isOk ? 'ok' : 'over');
+  document.getElementById('allocWarning').style.display = !isOk ? 'block' : 'none';
+
+  // expected return: core 7%, satellite 9%, leverage 12%, bond 3.5%, cash 1%
+  const expectedReturn = (etf*0.07 + sat*0.09 + lev*0.12 + bond*0.035 + cash*0.01) / 100;
+  const yrs = state.yearsLeft || 10;
+  const projected = safeCompound(state.assets, expectedReturn, yrs)
+    + safeAnnuity(state.monthly / 10000, expectedReturn, yrs);
+  const ownMonthly = (projected * 10000 * 0.035) / 12;
+  const totalMonthly = ownMonthly + state.laborMonthly;
+  const gap = state.neededAssets - projected;
+
+  const totalLev = lev + sat;
+  const riskLabel = totalLev >= 40 ? '⚠️ 較高風險' : totalLev >= 20 ? '中等風險' : '✓ 穩健';
+  const gapStr = gap <= 0
+    ? `<span style="color:var(--green)">無缺口 ✓</span>`
+    : `<span style="color:var(--red)">${fmtWan(gap)}</span>`;
+
+  document.getElementById('liveResult').innerHTML = `
+    <div style="font-size:12px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">即時試算結果</div>
+    <div class="live-row">
+      <span class="live-row-label">此配置預期年報酬</span>
+      <span class="live-row-val" style="color:var(--gold)">${(expectedReturn*100).toFixed(1)}%</span>
+    </div>
+    <div class="live-row">
+      <span class="live-row-label">退休時預估自有資產</span>
+      <span class="live-row-val">${fmtWan(projected)}</span>
+    </div>
+    <div class="live-row">
+      <span class="live-row-label">退休後月收入（含政府）</span>
+      <span class="live-row-val" style="color:${totalMonthly >= state.expense ? 'var(--green)':'var(--red)'}">$${fmt(totalMonthly)}</span>
+    </div>
+    <div class="live-row">
+      <span class="live-row-label">退休金缺口</span>
+      <span class="live-row-val">${gapStr}</span>
+    </div>
+    <div class="live-row">
+      <span class="live-row-label">風險評估</span>
+      <span class="live-row-val">${riskLabel}</span>
+    </div>`;
+
+  // save for final
+  state._finalProjected = projected;
+  state._finalTotal = totalMonthly;
+  state._finalGap = gap;
+  state._finalReturn = expectedReturn;
+  state._alloc = {etf, sat, lev, bond, cash};
+}
+
+function buildFinalReport() {
+  const p = state._finalProjected || state.projectedOwn;
+  const t = state._finalTotal || (state.projectedOwn*10000*0.035/12 + state.laborMonthly);
+  const g = state._finalGap !== undefined ? state._finalGap : state.gap;
+  const r = state._finalReturn || state.annualReturn;
+  const a = state._alloc || {etf:50,lev:15,bond:20,cash:15};
+
+  let icon, title, sub;
+  if (g <= 0) {
+    icon = '✅'; title = '退休準備充足'; sub = '繼續維持計畫，你的方向是對的。';
+  } else if (g < 200) {
+    icon = '⚠️'; title = '缺口可以補上'; sub = '調整月投入或配置，還有機會。';
+  } else {
+    icon = '🚨'; title = '需要認真面對'; sub = '盡早行動，時間是你最好的資產。';
+  }
+
+  document.getElementById('finalIcon').textContent = icon;
+  document.getElementById('finalTitle').textContent = title;
+  document.getElementById('finalSubtitle').textContent = sub;
+
+  document.getElementById('finalSummary').innerHTML = `
+    <div class="final-row"><span class="final-row-label">距離退休</span><span class="final-row-val">${state.yearsLeft} 年</span></div>
+    <div class="final-row"><span class="final-row-label">退休時自有資產</span><span class="final-row-val" style="color:var(--gold)">${fmtWan(p)}</span></div>
+    <div class="final-row"><span class="final-row-label">政府退休金（月）</span><span class="final-row-val">$${fmt(state.laborMonthly)}</span></div>
+    <div class="final-row"><span class="final-row-label">退休後月收入合計</span><span class="final-row-val" style="color:${t>=state.expense?'var(--green)':'var(--red)'}">$${fmt(t)}</span></div>
+    <div class="final-row"><span class="final-row-label">退休後月生活費（通膨調整）</span><span class="final-row-val">$${fmt(state.expenseReal)}</span></div>
+    <div class="final-row"><span class="final-row-label">通膨率假設</span><span class="final-row-val">${state.inflation}%</span></div>
+    <div class="final-row"><span class="final-row-label">退休金缺口</span><span class="final-row-val" style="color:${g<=0?'var(--green)':'var(--red)'}">${g<=0?'無缺口 ✓':fmtWan(g)}</span></div>
+    <div class="final-row"><span class="final-row-label">配置：核心／衛星／槓桿／債券／現金</span><span class="final-row-val">${a.etf}/${a.sat||0}/${a.lev}/${a.bond}/${a.cash}%</span></div>
+    <div class="final-row"><span class="final-row-label">預期年報酬率</span><span class="final-row-val">${(r*100).toFixed(1)}%</span></div>`;
+}
+
+function buildPrintHTML() {
+  const p = state._finalProjected || state.projectedOwn;
+  const t = state._finalTotal || (state.projectedOwn*10000*0.035/12 + state.laborMonthly);
+  const g = state._finalGap !== undefined ? state._finalGap : state.gap;
+  const r = state._finalReturn || state.annualReturn;
+  const a = state._alloc || {etf:40,sat:20,lev:15,bond:15,cash:10};
+  const today = new Date().toLocaleDateString('zh-TW');
+  const statusColor = g <= 0 ? '#27ae60' : g < 200 ? '#c8873a' : '#c0392b';
+  const statusText = g <= 0 ? '✅ 退休準備充足' : g < 200 ? '⚠️ 缺口可以補上' : '🚨 需要認真面對';
+
+  return `
+  <div style="max-width:600px;margin:0 auto;font-family:'Noto Sans TC',sans-serif;">
+    <!-- Header -->
+    <div style="border-bottom:3px solid #111;padding-bottom:16px;margin-bottom:24px;">
+      <div style="font-size:11px;letter-spacing:0.2em;color:#888;margin-bottom:6px;">退休金缺口診斷報告</div>
+      <div style="font-size:28px;font-weight:900;letter-spacing:-0.02em;">退休財務診斷報告</div>
+      <div style="font-size:13px;color:#888;margin-top:4px;">產生日期：${today}｜本報告僅供參考</div>
+    </div>
+
+    <!-- Status -->
+    <div style="background:#f5f5f5;border-left:4px solid ${statusColor};padding:16px 20px;margin-bottom:24px;">
+      <div style="font-size:18px;font-weight:700;color:${statusColor}">${statusText}</div>
+      <div style="font-size:13px;color:#666;margin-top:4px;">
+        ${g <= 0 ? '依目前軌跡，退休金來源充足。維持紀律，持續執行。' :
+          g < 200 ? '缺口不大，調整月投入或配置即可補上。' :
+          '缺口較大，建議提高月投入、優化配置、或延後退休。'}
+      </div>
+    </div>
+
+    <!-- Key Numbers -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;">
+      <div style="border:1px solid #ddd;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:#888;margin-bottom:6px;">距離退休</div>
+        <div style="font-size:22px;font-weight:900;color:#c9a84c">${state.yearsLeft} 年</div>
+      </div>
+      <div style="border:1px solid #ddd;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:#888;margin-bottom:6px;">退休時自有資產</div>
+        <div style="font-size:22px;font-weight:900;color:#c9a84c">${fmtWan(p)}</div>
+      </div>
+      <div style="border:1px solid #ddd;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:#888;margin-bottom:6px;">退休金缺口</div>
+        <div style="font-size:22px;font-weight:900;color:${g<=0?'#27ae60':'#c0392b'}">${g<=0?'無缺口':fmtWan(g)}</div>
+      </div>
+    </div>
+
+    <!-- Detail Table -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:14px;">
+      <tr style="background:#111;color:white;">
+        <td style="padding:10px 14px;font-weight:600;">項目</td>
+        <td style="padding:10px 14px;font-weight:600;text-align:right;">數值</td>
+      </tr>
+      ${[
+        ['目前年齡', state.age + ' 歲'],
+        ['預計退休年齡', state.retireAge + ' 歲'],
+        ['今日每月生活費', '$' + fmt(state.expense)],
+        ['通膨率假設', state.inflation + '%'],
+        ['退休後月生活費（通膨調整）', '$' + fmt(state.expenseReal)],
+        ['政府退休金（月領）', '$' + fmt(state.laborMonthly)],
+        ['退休後月收入合計', '$' + fmt(t)],
+        ['退休金缺口', g<=0?'無缺口 ✓':fmtWan(g)],
+        ['預期年報酬率', (r*100).toFixed(1) + '%'],
+      ].map((([k,v],i) => `
+        <tr style="background:${i%2===0?'#f9f9f9':'white'}">
+          <td style="padding:10px 14px;color:#555;">${k}</td>
+          <td style="padding:10px 14px;text-align:right;font-weight:600;">${v}</td>
+        </tr>`)).join('')}
+    </table>
+
+    <!-- Allocation -->
+    <div style="margin-bottom:24px;">
+      <div style="font-size:12px;letter-spacing:0.1em;color:#888;text-transform:uppercase;margin-bottom:10px;">建議資產配置</div>
+      <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin-bottom:8px;">
+        <div style="width:${a.etf}%;background:#27ae60"></div>
+        <div style="width:${a.sat||0}%;background:#e67e22"></div>
+        <div style="width:${a.lev}%;background:#c9a84c"></div>
+        <div style="width:${a.bond}%;background:#2980b9"></div>
+        <div style="width:${a.cash}%;background:#888"></div>
+      </div>
+      <div style="display:flex;gap:16px;font-size:12px;flex-wrap:wrap;">
+        <span>🟢 核心 ETF ${a.etf}%</span>
+        <span>🟠 衛星 ETF ${a.sat||0}%</span>
+        <span>🟡 槓桿 ETF ${a.lev}%</span>
+        <span>🔵 債券/REIT ${a.bond}%</span>
+        <span>⚫ 現金 ${a.cash}%</span>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div style="font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:14px;line-height:1.7;">
+      本報告僅供參考，非投資建議。計算結果基於假設報酬率，實際結果可能不同。<br>
+      勞退平均餘命依勞動部公告為準，每3年更新。投資涉及風險，請自行判斷。
+    </div>
+  </div>`;
+}
+
+function printReport() {
+  const html = buildPrintHTML();
+  document.getElementById('printArea').innerHTML = html;
+  window.print();
+}
+
+function downloadReport() {
+  const html = buildPrintHTML();
+  const today = new Date().toLocaleDateString('zh-TW').replace(/\//g,'-');
+  const fullHtml = `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>退休金診斷報告_${today}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;900&display=swap');
+  body { margin:0; padding:40px; background:white; font-family:'Noto Sans TC',sans-serif; }
+  @media print { body { padding:20px; } }
+</style>
+</head>
+<body>${html}</body>
+</html>`;
+
+  const blob = new Blob([fullHtml], {type: 'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `退休金診斷報告_${today}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// override goTo to build final on demand
+const _goTo = goTo;
+window.goTo = function(n) {
+  if (n === 5) buildFinalReport();
+  _goTo(n);
+};
+
+// init
+updateAlloc();
+</script>
+</body>
+</html>
